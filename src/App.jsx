@@ -107,6 +107,16 @@ export default function App() {
     const p = new URLSearchParams(window.location.search);
     const code = p.get("code");
     if (code && !token) {
+      const verifier = localStorage.getItem("sp_verifier");
+      if (!verifier) {
+        // Verifier missing — clear the bad URL and let them try again cleanly
+        const u = new URL(window.location);
+        u.searchParams.delete("code");
+        u.searchParams.delete("state");
+        window.history.replaceState({}, "", u);
+        setError("Login session expired. Please click Connect Spotify again.");
+        return;
+      }
       fetchToken(code).then(d => {
         if (d.access_token) {
           localStorage.setItem("sp_token", d.access_token);
